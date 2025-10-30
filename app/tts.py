@@ -1,42 +1,34 @@
-from fastapi import APIRouter
+# app/tts.py
+import os
+import uuid
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from transformers import AutoModel
-import numpy as np
-import soundfile as sf
-import io, base64
+from gtts import gTTS
+from fastapi.responses import JSONResponse
 
-from .utils import ensure_file
+router = APIRouter(prefix="/api/tts", tags=["tts"])
 
-tts_router = APIRouter(prefix="/tts", tags=["TTS"])
+AUDIO_DIR = os.path.join(os.path.dirname(__file__), "..", "audio")
+AUDIO_DIR = os.path.abspath(AUDIO_DIR)
+os.makedirs(AUDIO_DIR, exist_ok=True)
 
-# Load IndicF5 once (it uses trust_remote_code=True per README)
-# The repo shows usage with a reference audio and its transcript. We'll fetch a public sample.
-# Source & usage pattern: IndicF5 README. :contentReference[oaicite:1]{index=1}
-MODEL = AutoModel.from_pretrained("ai4bharat/IndicF5", trust_remote_code=True)
-
-# Public sample prompt shipped in the official repo:
-REF_WAV_URL = "https://raw.githubusercontent.com/AI4Bharat/IndicF5/main/prompts/PAN_F_HAPPY_00001.wav"
-REF_TEXT = "ਭਹੰਪੀ ਵਿੱਚ ਸਮਾਰਕਾਂ ਦੇ ਭਵਨ ਨਿਰਮਾਣ ਕਲਾ ਦੇ ਵੇਰਵੇ ਗੁੰਝਲਦਾਰ ਅਤੇ ਹੈਰਾਨ ਕਰਨ ਵਾਲੇ ਹਨ, ਜੋ ਮੈਨੂੰ ਖੁਸ਼ ਕਰਦੇ  ਹਨ।"
-
-class TTSReq(BaseModel):
+class TTSRequest(BaseModel):
     text: str
-    # You can pass your own prompt (optional). If omitted, we use default.
-    ref_audio_url: str | None = None
-    ref_text: str | None = None
+    lang: str = "en"
 
-@tts_router.post("")
-def synth(req: TTSReq):
-    ref_url = req.ref_audio_url or REF_WAV_URL
-    ref_txt = req.ref_text or REF_TEXT
-    local_ref = ensure_file(ref_url, "ref_prompt.wav")
+@router.post("/", response_class=JSONResponse)
+async def synthesize_tts(req: TTSRequest):
+    text = req.text.strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Text is empty")
+    # generate unique filename
+    fname = f"{uuid.uuid4().hex}.mp3"
+    out_path = os.path.join(AUDIO_DIR, fname)
+    try:
+        tts = gTTS(text=text, lang=req.lang)
+        tts.save(out_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"TTS failed: {e}")
 
-    audio = MODEL(req.text, ref_audio_path=local_ref, ref_text=ref_txt)
-    # Normalize if int16
-    if audio.dtype == np.int16:
-        audio = audio.astype(np.float32) / 32768.0
-
-    # Return as WAV bytes (base64)
-    buf = io.BytesIO()
-    sf.write(buf, np.array(audio, dtype=np.float32), samplerate=24000, format="WAV")
-    b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
-    return {"wav_base64": b64, "sample_rate": 24000}
+    # return a URL path (frontend will request this from backend)
+    return {"url": f"/audio/{fname}"}
