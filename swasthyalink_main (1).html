@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SwasthyaLink</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: #001b3f;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    @keyframes fadeInUp {
+      0% { opacity: 0; transform: translateY(40px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .logo-container img {
+      width: 400px;
+      max-width: 90%;
+      border-radius: 15px;
+      margin-bottom: 30px;
+      box-shadow: 0 0 35px rgba(255, 255, 255, 0.3);
+      animation: fadeInUp 1s ease-in-out;
+    }
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2rem;
+      width: 320px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+      animation: fadeInUp 1.4s ease-in-out;
+    }
+    input, select {
+      width: 90%;
+      padding: 0.8rem;
+      margin: 0.6rem 0;
+      border-radius: 10px;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.8rem 1.6rem;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 1rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      width: 95%;
+    }
+    .btn:hover { background: #005fc7; transform: translateY(-2px); }
+    .hidden { display: none; }
+    .container {
+      max-width: 950px;
+      margin: 2rem auto;
+      background: #00163a;
+      border-radius: 20px;
+      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+      padding: 2.5rem;
+      color: white;
+      animation: fadeInUp 0.8s ease-in-out;
+      text-align: center;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.2rem;
+      margin-top: 20px;
+    }
+    .card {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 15px;
+      width: 200px;
+      padding: 1.5rem;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.05);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .card:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 6px 12px rgba(255, 255, 255, 0.2);
+    }
+    .icon { font-size: 2rem; color: #79bfff; margin-bottom: 0.5rem; }
+    #root { width: 100vw; height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="landingPage">
+    <div class="logo-container">
+      <img src="https://i.ibb.co/V00hmTP2/logo.png" alt="SwasthyaLink Logo" />
+    </div>
+    <div class="login-container">
+      <input type="text" id="username" placeholder="Enter Your Name" />
+      <select id="role">
+        <option value="patient">Patient</option>
+        <option value="doctor">Doctor</option>
+      </select>
+      <select id="language" onchange="translate(this.value)">
+        <option value="en">English</option>
+        <option value="hi">Hindi</option>
+        <option value="mr">Marathi</option>
+        <option value="kn">Kannada</option>
+      </select>
+      <button class="btn" onclick="login()">Login</button>
+    </div>
+  </div>
+
+  <div id="mainContent">
+    <div id="patientDashboard" class="container hidden">
+      <h2 id="welcomeText">Welcome!</h2>
+      <div class="grid">
+        <div class="card" onclick="openSection('consultPatient')"><i class="fas fa-stethoscope icon"></i><h3 id="consultText">Consult</h3></div>
+        <div class="card" onclick="openSection('recordsPatient')"><i class="fas fa-file-medical icon"></i><h3 id="recordsText">Records</h3></div>
+      </div>
+      <button class="btn" onclick="logout()" id="logoutText">Logout</button>
+    </div>
+
+    <div id="doctorDashboard" class="container hidden">
+      <h2 id="welcomeTextDoctor">Welcome!</h2>
+      <div class="grid">
+        <div class="card" onclick="openSection('consultDoctor')"><i class="fas fa-user-md icon"></i><h3 id="consultTextDoc">Consult</h3></div>
+        <div class="card" onclick="openSection('recordsDoctor')"><i class="fas fa-folder-open icon"></i><h3 id="recordsTextDoc">Records</h3></div>
+      </div>
+      <button class="btn" onclick="logout()" id="logoutTextDoc">Logout</button>
+    </div>
+
+    <div id="consultPatient" class="container hidden">
+      <h2 id="consultTitle">Consult</h2>
+      <div class="grid">
+        <div class="card" onclick="startCall()"><i class="fas fa-phone icon"></i><h3 id="callText">Call</h3></div>
+        <div class="card"><i class="fas fa-comment-dots icon"></i><h3 id="msgText">Send Message</h3></div>
+      </div>
+      <button class="btn" onclick="backToDashboard('patient')" id="backText">Back</button>
+    </div>
+
+    <div id="consultDoctor" class="container hidden">
+      <h2 id="consultTitleDoc">Consult</h2>
+      <div class="grid">
+        <div class="card" onclick="startCall()"><i class="fas fa-phone icon"></i><h3 id="callTextDoc">Call</h3></div>
+        <div class="card"><i class="fas fa-comment-dots icon"></i><h3 id="msgTextDoc">Send Message</h3></div>
+      </div>
+      <button class="btn" onclick="backToDashboard('doctor')" id="backTextDoc">Back</button>
+    </div>
+
+    <div id="recordsPatient" class="container hidden">
+      <h2 id="recordTitle">Records</h2>
+      <div class="grid">
+        <div class="card"><i class="fas fa-prescription-bottle-alt icon"></i><h3 id="prescriptionText">Prescriptions</h3></div>
+        <div class="card"><i class="fas fa-envelope icon"></i><h3 id="inboxText">Inbox</h3></div>
+      </div>
+      <button class="btn" onclick="backToDashboard('patient')" id="backTextRec">Back</button>
+    </div>
+
+    <div id="recordsDoctor" class="container hidden">
+      <h2 id="recordTitleDoc">Records</h2>
+      <div class="grid">
+        <div class="card"><i class="fas fa-clipboard-list icon"></i><h3 id="pastRecordsText">Past Records</h3></div>
+      </div>
+      <button class="btn" onclick="backToDashboard('doctor')" id="backTextRecDoc">Back</button>
+    </div>
+  </div>
+
+  <div id="callPage" class="hidden">
+    <div id="root"></div>
+  </div>
+
+  <script src="https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js"></script>
+  <script>
+    const translations = {
+      en: { welcome: 'Welcome!', consult: 'Consult', records: 'Records', call: 'Call', sendMsg: 'Send Message', back: 'Back', logout: 'Logout', prescriptions: 'Prescriptions', inbox: 'Inbox', pastRecords: 'Past Records' },
+      hi: { welcome: 'स्वागत है!', consult: 'परामर्श', records: 'रिकॉर्ड', call: 'कॉल', sendMsg: 'संदेश भेजें', back: 'वापस', logout: 'लॉगआउट', prescriptions: 'पर्चे', inbox: 'इनबॉक्स', pastRecords: 'पिछले रिकॉर्ड' },
+      mr: { welcome: 'स्वागत आहे!', consult: 'सल्ला', records: 'नोंदी', call: 'कॉल', sendMsg: 'संदेश पाठवा', back: 'मागे', logout: 'लॉगआउट', prescriptions: 'औषधाचे प्रिस्क्रिप्शन', inbox: 'इनबॉक्स', pastRecords: 'मागील नोंदी' },
+      kn: { welcome: 'ಸ್ವಾಗತ!', consult: 'ಸಮಾಲೋಚನೆ', records: 'ದಾಖಲೆಗಳು', call: 'ಕಾಲ್', sendMsg: 'ಸಂದೇಶ ಕಳುಹಿಸಿ', back: 'ಹಿಂದೆ', logout: 'ಲಾಗ್ಔಟ್', prescriptions: 'ಔಷಧ ಪತ್ರ', inbox: 'ಇನ್‌ಬಾಕ್ಸ್', pastRecords: 'ಹಿಂದಿನ ದಾಖಲೆಗಳು' }
+    };
+
+    function login() {
+      const role = document.getElementById('role').value;
+      const lang = document.getElementById('language').value;
+      translate(lang);
+      document.getElementById('landingPage').classList.add('hidden');
+      if (role === 'patient') document.getElementById('patientDashboard').classList.remove('hidden');
+      else document.getElementById('doctorDashboard').classList.remove('hidden');
+    }
+
+    function logout() {
+      document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+      document.getElementById('landingPage').classList.remove('hidden');
+    }
+
+    function openSection(id) {
+      document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function backToDashboard(role) {
+      document.querySelectorAll('.container').forEach(c => c.classList.add('hidden'));
+      if (role === 'patient') document.getElementById('patientDashboard').classList.remove('hidden');
+      else document.getElementById('doctorDashboard').classList.remove('hidden');
+    }
+
+    function translate(lang) {
+      const t = translations[lang];
+      document.getElementById('welcomeText').textContent = t.welcome;
+      document.getElementById('welcomeTextDoctor').textContent = t.welcome;
+      document.getElementById('consultText').textContent = t.consult;
+      document.getElementById('consultTextDoc').textContent = t.consult;
+      document.getElementById('recordsText').textContent = t.records;
+      document.getElementById('recordsTextDoc').textContent = t.records;
+      document.getElementById('consultTitle').textContent = t.consult;
+      document.getElementById('consultTitleDoc').textContent = t.consult;
+      document.getElementById('callText').textContent = t.call;
+      document.getElementById('msgText').textContent = t.sendMsg;
+      document.getElementById('callTextDoc').textContent = t.call;
+      document.getElementById('msgTextDoc').textContent = t.sendMsg;
+      document.getElementById('backText').textContent = t.back;
+      document.getElementById('backTextDoc').textContent = t.back;
+      document.getElementById('backTextRec').textContent = t.back;
+      document.getElementById('backTextRecDoc').textContent = t.back;
+      document.getElementById('recordTitle').textContent = t.records;
+      document.getElementById('recordTitleDoc').textContent = t.records;
+      document.getElementById('logoutText').textContent = t.logout;
+      document.getElementById('logoutTextDoc').textContent = t.logout;
+      document.getElementById('prescriptionText').textContent = t.prescriptions;
+      document.getElementById('inboxText').textContent = t.inbox;
+      document.getElementById('pastRecordsText').textContent = t.pastRecords;
+    }
+
+    function startCall() {
+      document.getElementById('mainContent').classList.add('hidden');
+      document.getElementById('callPage').classList.remove('hidden');
+
+      const roomID = Math.floor(Math.random() * 10000) + "";
+      const userID = Math.floor(Math.random() * 10000) + "";
+      const userName = "userName" + userID;
+      const appID = 874004200;
+      const serverSecret = "47fb38e893493cec2b9fcd37e7f1e7ed";
+      const kitToken = ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+
+      const zp = ZegoUIKitPrebuilt.create(kitToken);
+      zp.joinRoom({
+        container: document.querySelector("#root"),
+        sharedLinks: [{
+          name: 'Personal link',
+          url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID,
+        }],
+        scenario: {
+          mode: ZegoUIKitPrebuilt.VideoConference,
+        },
+        turnOnMicrophoneWhenJoining: true,
+        turnOnCameraWhenJoining: true,
+        showMyCameraToggleButton: true,
+        showMyMicrophoneToggleButton: true,
+        showAudioVideoSettingsButton: true,
+        showScreenSharingButton: true,
+        showTextChat: true,
+        showUserList: true,
+        maxUsers: 2,
+        layout: 'Auto',
+        showLayoutButton: false,
+      });
+    }
+  </script>
+</body>
+</html>
