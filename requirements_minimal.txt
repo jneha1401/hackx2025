@@ -1,0 +1,14 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Core ML libraries that should work with Python 3.13
+torch>=2.6.0
+transformers>=4.40.0
+numpy>=1.26.0
+soundfile>=0.12.0
+pydantic>=2.8.0
+
+# Try to install these separately if needed
+# faster-whisper==1.0.3
+# sentencepiece==0.2.0
+# accelerate==0.34.2

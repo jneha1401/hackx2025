@@ -4,9 +4,6 @@ uvicorn[standard]==0.30.6
 # STT
 faster-whisper==1.0.3
 
-# TTS (per IndicF5 README)
-git+https://github.com/AI4Bharat/IndicF5.git
-
 # Sentiment + Translation
 transformers==4.44.2
 torch>=2.6.0
