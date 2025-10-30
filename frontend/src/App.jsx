@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const App = () => {
   const [currentView, setCurrentView] = useState('landing');
@@ -14,6 +14,48 @@ const App = () => {
   };
 
   const t = translations[currentLanguage];
+
+  useEffect(() => {
+    // Load ZegoUIKitPrebuilt script dynamically
+    const loadZegoScript = () => {
+      return new Promise((resolve, reject) => {
+        // Check if already loaded
+        if (window.ZegoUIKitPrebuilt) {
+          console.log('ZegoUIKitPrebuilt already loaded');
+          resolve();
+          return;
+        }
+
+        // Check if script tag already exists
+        const existingScript = document.querySelector('script[src*="zego-uikit-prebuilt"]');
+        if (existingScript) {
+          existingScript.onload = () => {
+            console.log('ZegoUIKitPrebuilt loaded from existing script');
+            resolve();
+          };
+          existingScript.onerror = reject;
+          return;
+        }
+
+        // Create and load script
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/@zegocloud/zego-uikit-prebuilt/zego-uikit-prebuilt.js';
+        script.onload = () => {
+          console.log('ZegoUIKitPrebuilt loaded successfully');
+          resolve();
+        };
+        script.onerror = () => {
+          console.error('Failed to load ZegoUIKitPrebuilt script');
+          reject();
+        };
+        document.head.appendChild(script);
+      });
+    };
+
+    loadZegoScript().catch(error => {
+      console.error('Error loading Zego script:', error);
+    });
+  }, []);
 
   const login = () => {
     setCurrentView(userRole === 'patient' ? 'patientDashboard' : 'doctorDashboard');
@@ -36,41 +78,64 @@ const App = () => {
   };
 
   const startCall = () => {
+    console.log('startCall clicked');
     setCurrentView('callPage');
     
-    setTimeout(() => {
+    const initializeCall = () => {
       const roomID = Math.floor(Math.random() * 10000) + "";
       const userID = Math.floor(Math.random() * 10000) + "";
       const userName = "userName" + userID;
       const appID = 874004200;
       const serverSecret = "47fb38e893493cec2b9fcd37e7f1e7ed";
       
+      console.log('Attempting to create call with roomID:', roomID);
+      
       if (window.ZegoUIKitPrebuilt) {
-        const kitToken = window.ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
-        const zp = window.ZegoUIKitPrebuilt.create(kitToken);
-        zp.joinRoom({
-          container: document.querySelector("#zego-root"),
-          sharedLinks: [{
-            name: 'Personal link',
-            url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID,
-          }],
-          scenario: {
-            mode: window.ZegoUIKitPrebuilt.VideoConference,
-          },
-          turnOnMicrophoneWhenJoining: true,
-          turnOnCameraWhenJoining: true,
-          showMyCameraToggleButton: true,
-          showMyMicrophoneToggleButton: true,
-          showAudioVideoSettingsButton: true,
-          showScreenSharingButton: true,
-          showTextChat: true,
-          showUserList: true,
-          maxUsers: 2,
-          layout: 'Auto',
-          showLayoutButton: false,
-        });
+        try {
+          const kitToken = window.ZegoUIKitPrebuilt.generateKitTokenForTest(appID, serverSecret, roomID, userID, userName);
+          const zp = window.ZegoUIKitPrebuilt.create(kitToken);
+          
+          const container = document.querySelector("#zego-root");
+          console.log('Container found:', !!container);
+          
+          if (!container) {
+            console.error('Container #zego-root not found');
+            return;
+          }
+          
+          zp.joinRoom({
+            container: container,
+            sharedLinks: [{
+              name: 'Personal link',
+              url: window.location.protocol + '//' + window.location.host + window.location.pathname + '?roomID=' + roomID,
+            }],
+            scenario: {
+              mode: window.ZegoUIKitPrebuilt.VideoConference,
+            },
+            turnOnMicrophoneWhenJoining: true,
+            turnOnCameraWhenJoining: true,
+            showMyCameraToggleButton: true,
+            showMyMicrophoneToggleButton: true,
+            showAudioVideoSettingsButton: true,
+            showScreenSharingButton: true,
+            showTextChat: true,
+            showUserList: true,
+            maxUsers: 2,
+            layout: 'Auto',
+            showLayoutButton: false,
+          });
+          console.log('Call setup completed');
+        } catch (error) {
+          console.error('Error setting up call:', error);
+        }
+      } else {
+        console.log('ZegoUIKitPrebuilt not ready, waiting...');
+        setTimeout(initializeCall, 500);
       }
-    }, 100);
+    };
+    
+    // Wait a bit for the view to change, then initialize call
+    setTimeout(initializeCall, 100);
   };
 
   return (
