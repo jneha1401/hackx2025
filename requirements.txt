@@ -1,11 +1,11 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 
-# STT
+# STT (Speech-to-Text)
 faster-whisper==1.0.3
 
-# TTS (per IndicF5 README)
-git+https://github.com/AI4Bharat/IndicF5.git
+# TTS (using gTTS)
+gTTS==2.5.3
 
 # Sentiment + Translation
 transformers==4.44.2
