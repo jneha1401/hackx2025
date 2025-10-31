@@ -1,26 +1,25 @@
-from fastapi import APIRouter, UploadFile, File
 import os
-from faster_whisper import WhisperModel
+from fastapi import APIRouter, UploadFile
+from openai import OpenAI
 
-stt_router = APIRouter()
+router = APIRouter()
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# Load the Faster Whisper model once at startup (e.g., "base" or "small" for speed)
-model = WhisperModel("base", device="cpu", compute_type="int8")
+@router.post("/transcribe")
+async def transcribe_audio(file: UploadFile):
+    """
+    Transcribe audio file using OpenAI Whisper model.
+    """
+    try:
+        with open("temp_audio.wav", "wb") as temp:
+            temp.write(await file.read())
 
-@stt_router.post("/stt")
-async def transcribe_audio(file: UploadFile = File(...)):
-    # Save the uploaded file temporarily
-    temp_file = "temp_audio.wav"
-    with open(temp_file, "wb") as f:
-        f.write(await file.read())
+        with open("temp_audio.wav", "rb") as audio:
+            transcription = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio
+            )
 
-    # Run the model to transcribe
-    segments, info = model.transcribe(temp_file)
-
-    # Combine all segments into one full text string
-    transcription = " ".join([segment.text for segment in segments])
-
-    # Clean up the temporary file
-    os.remove(temp_file)
-
-    return {"language": info.language, "text": transcription}
+        return {"text": transcription.text}
+    except Exception as e:
+        return {"error": str(e)}
