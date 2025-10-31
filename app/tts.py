@@ -1,11 +1,13 @@
-# app/tts.py
+from fastapi import APIRouter, Form
 from gtts import gTTS
 import os
+from fastapi.responses import FileResponse
 
-def text_to_speech(text, lang="en"):
-    """
-    Converts given text to speech and saves as output.mp3
-    """
-    tts = gTTS(text=text, lang=lang)
-    tts.save("output.mp3")
-    os.system("afplay output.mp3")  # works on macOS
+tts_router = APIRouter()
+
+@tts_router.post("/tts")
+async def text_to_speech(text: str = Form(...)):
+    tts = gTTS(text=text, lang="en")
+    filename = "output.mp3"
+    tts.save(filename)
+    return FileResponse(filename, media_type="audio/mpeg", filename=filename)
